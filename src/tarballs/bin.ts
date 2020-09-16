@@ -38,6 +38,11 @@ if exist "%~dp0..\\bin\\node.exe" (
     await qq.write(bin, `#!/usr/bin/env bash
 set -e
 echoerr() { echo "$@" 1>&2; }
+_term() {
+  [[ -n $cmd_pid ]] && kill $cmd_pid
+}
+
+trap _term SIGTERM
 
 get_script_dir () {
   SOURCE="\${BASH_SOURCE[0]}"
@@ -78,7 +83,9 @@ else
   if [ "\$DEBUG" == "*" ]; then
     echoerr ${binPathEnvVar}="\$${binPathEnvVar}" "\$NODE" "\$DIR/run" "\$@"
   fi
-  "\$NODE" "\$DIR/run" "\$@"
+  "\$NODE" "\$DIR/run" "\$@" &
+  cmd_pid=$!
+  wait  $cmd_pid
 fi
 `)
     await qq.chmod(bin, 0o755)
