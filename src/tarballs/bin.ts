@@ -85,7 +85,7 @@ else
   fi
   "\$NODE" "\$DIR/run" "\$@" &
   cmd_pid=$!
-  wait  $cmd_pid
+  wait $cmd_pid
 fi
 `)
     await qq.chmod(bin, 0o755)
