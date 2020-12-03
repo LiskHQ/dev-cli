@@ -83,9 +83,13 @@ else
   if [ "\$DEBUG" == "*" ]; then
     echoerr ${binPathEnvVar}="\$${binPathEnvVar}" "\$NODE" "\$DIR/run" "\$@"
   fi
-  "\$NODE" "\$DIR/run" "\$@" &
-  cmd_pid=$!
-  wait $cmd_pid
+  if [ "$1" = "start" ]; then
+    "$NODE" "$DIR/run" "$@" &
+    cmd_pid=$!
+    wait $cmd_pid
+  else
+    "$NODE" "$DIR/run" "$@"
+  fi
 fi
 `)
     await qq.chmod(bin, 0o755)
