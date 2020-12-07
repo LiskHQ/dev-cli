@@ -2,6 +2,17 @@
 import * as Config from '@oclif/config'
 import * as qq from 'qqjs'
 
+const renderExecScript = (daemons: string) => daemons === '' ? '"$NODE" "$DIR/run" "$@"' : `
+  case $1 in
+    ${daemons})
+      "$NODE" "$DIR/run" "$@" &
+      cmd_pid=$!
+      wait $cmd_pid
+      ;;
+    *) "$NODE" "$DIR/run" "$@" ;;
+  esac
+`;
+
 export async function writeBinScripts({config, baseWorkspace, nodeVersion}: {config: Config.IConfig; baseWorkspace: string; nodeVersion: string}) {
   const binPathEnvVar = config.scopedEnvVarKey('BINPATH')
   const redirectedEnvVar = config.scopedEnvVarKey('REDIRECTED')
@@ -84,14 +95,7 @@ else
   if [ "\$DEBUG" == "*" ]; then
     echoerr ${binPathEnvVar}="\$${binPathEnvVar}" "\$NODE" "\$DIR/run" "\$@"
   fi
-  case $1 in
-    ${daemons})
-      "$NODE" "$DIR/run" "$@" &
-      cmd_pid=$!
-      wait $cmd_pid
-      ;;
-    *) "$NODE" "$DIR/run" "$@" ;;
-  esac
+  ${renderExecScript(daemons)}
 fi
 `)
     await qq.chmod(bin, 0o755)
