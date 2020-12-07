@@ -35,6 +35,7 @@ if exist "%~dp0..\\bin\\node.exe" (
   }
   const writeUnix = async () => {
     const bin = qq.join([baseWorkspace, 'bin', config.bin])
+    const daemons = config.pjson.lisk?.daemons?.join('|') ?? '';
     await qq.write(bin, `#!/usr/bin/env bash
 set -e
 echoerr() { echo "$@" 1>&2; }
@@ -83,13 +84,14 @@ else
   if [ "\$DEBUG" == "*" ]; then
     echoerr ${binPathEnvVar}="\$${binPathEnvVar}" "\$NODE" "\$DIR/run" "\$@"
   fi
-  if [ "$1" = "start" ]; then
-    "$NODE" "$DIR/run" "$@" &
-    cmd_pid=$!
-    wait $cmd_pid
-  else
-    "$NODE" "$DIR/run" "$@"
-  fi
+  case $1 in
+    ${daemons})
+      "$NODE" "$DIR/run" "$@" &
+      cmd_pid=$!
+      wait $cmd_pid
+      ;;
+    *) "$NODE" "$DIR/run" "$@" ;;
+  esac
 fi
 `)
     await qq.chmod(bin, 0o755)
